@@ -84,7 +84,7 @@ async function runOnce() {
       await notify({
         kind: 'up',
         title: 'Sitio ARRIBA',
-        text: `El sitio ${config.targetUrl} respondió OK (status ${result.status}, ${result.elapsedMs} ms).`,
+        text: `Respondió OK (status ${result.status}, ${result.elapsedMs} ms).`,
       });
       state.recoveredAlertSent = true;
       state.downAlertSent = false;
@@ -92,7 +92,7 @@ async function runOnce() {
       await notify({
         kind: 'up',
         title: 'Monitor iniciado — sitio arriba',
-        text: `Primera revisión OK: ${config.targetUrl} (status ${result.status}, ${result.elapsedMs} ms).`,
+        text: `Primera revisión OK (status ${result.status}, ${result.elapsedMs} ms).`,
       });
     }
   } else {
@@ -118,7 +118,7 @@ async function runOnce() {
         await notify({
           kind: 'down',
           title: 'Sitio CAÍDO',
-          text: `El sitio ${config.targetUrl} no responde. ${result.status ? `Status ${result.status}.` : ''} ${result.error ? `Error: ${result.error}.` : ''}`.trim(),
+          text: `No responde. ${result.status ? `Status ${result.status}.` : ''} ${result.error ? `Error: ${result.error}.` : ''}`.trim(),
         });
         state.downAlertSent = true;
       }

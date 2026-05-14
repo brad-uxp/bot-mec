@@ -11,7 +11,7 @@ async function sendTelegram({ title, text }) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   const body = {
     chat_id: chatId,
-    text: `*${title}*\n${text}`,
+    text: `*${title}*\n${config.targetUrl}\n${text}`,
     parse_mode: 'Markdown',
     disable_web_page_preview: true,
   };
@@ -36,8 +36,12 @@ async function sendResend({ kind, title, text }) {
   if (!apiKey || !to) return { skipped: true, channel: 'resend' };
 
   const emoji = kind === 'up' ? '✅' : kind === 'down' ? '🔴' : 'ℹ️';
-  const subject = `${emoji} ${title} — ${config.targetUrl}`;
-  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;line-height:1.5;color:#111"><h2 style="margin:0 0 12px">${emoji} ${escapeHtml(title)}</h2><p style="margin:0 0 12px">${escapeHtml(text)}</p><p style="margin:0;color:#666;font-size:12px">Sitio monitoreado: <a href="${escapeHtml(config.targetUrl)}">${escapeHtml(config.targetUrl)}</a><br>Enviado por bot-mec a las ${new Date().toISOString()}</p></div>`;
+  const subject = `${emoji} ${title}`;
+  const url = config.targetUrl;
+  const urlEsc = escapeHtml(url);
+  const action = kind === 'up' ? 'Entra al sitio:' : 'Sitio monitoreado:';
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:15px;line-height:1.5;color:#111"><h2 style="margin:0 0 16px">${emoji} ${escapeHtml(title)}</h2><p style="margin:0 0 8px">${action}</p><p style="margin:0 0 20px;font-size:17px"><a href="${urlEsc}" style="color:#0a66c2;word-break:break-all">${urlEsc}</a></p><p style="margin:0 0 16px;color:#444">${escapeHtml(text)}</p><p style="margin:0;color:#888;font-size:12px">Enviado por bot-mec · ${new Date().toISOString()}</p></div>`;
+  const plain = `${title}\n\n${action} ${url}\n\n${text}`;
 
   const recipients = to.split(',').map((s) => s.trim()).filter(Boolean);
   try {
@@ -52,7 +56,7 @@ async function sendResend({ kind, title, text }) {
         to: recipients,
         subject,
         html,
-        text,
+        text: plain,
       }),
     });
     if (!res.ok) {
@@ -78,7 +82,7 @@ async function sendDiscord({ title, text }) {
   const url = config.discordWebhookUrl;
   if (!url) return { skipped: true, channel: 'discord' };
 
-  const body = { content: `**${title}**\n${text}` };
+  const body = { content: `**${title}**\n${config.targetUrl}\n${text}` };
   try {
     const res = await fetch(url, {
       method: 'POST',
