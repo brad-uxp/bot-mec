@@ -1,0 +1,10 @@
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = ["echo 'no runtime dependencies — skipping install'"]
+
+[start]
+cmd = "node src/index.js"
