@@ -31,6 +31,49 @@ async function sendTelegram({ title, text }) {
   }
 }
 
+async function sendResend({ kind, title, text }) {
+  const { apiKey, from, to } = config.resend;
+  if (!apiKey || !to) return { skipped: true, channel: 'resend' };
+
+  const emoji = kind === 'up' ? '✅' : kind === 'down' ? '🔴' : 'ℹ️';
+  const subject = `${emoji} ${title} — ${config.targetUrl}`;
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;line-height:1.5;color:#111"><h2 style="margin:0 0 12px">${emoji} ${escapeHtml(title)}</h2><p style="margin:0 0 12px">${escapeHtml(text)}</p><p style="margin:0;color:#666;font-size:12px">Sitio monitoreado: <a href="${escapeHtml(config.targetUrl)}">${escapeHtml(config.targetUrl)}</a><br>Enviado por bot-mec a las ${new Date().toISOString()}</p></div>`;
+
+  const recipients = to.split(',').map((s) => s.trim()).filter(Boolean);
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${apiKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: recipients,
+        subject,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      return { ok: false, channel: 'resend', status: res.status, error: errText.slice(0, 300) };
+    }
+    return { ok: true, channel: 'resend' };
+  } catch (err) {
+    return { ok: false, channel: 'resend', error: err?.message || String(err) };
+  }
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function sendDiscord({ title, text }) {
   const url = config.discordWebhookUrl;
   if (!url) return { skipped: true, channel: 'discord' };
@@ -55,6 +98,7 @@ async function sendDiscord({ title, text }) {
 export async function notify({ kind, title, text }) {
   log('info', 'alert', { kind, title, text });
   const results = await Promise.all([
+    sendResend({ kind, title, text }),
     sendTelegram({ title, text }),
     sendDiscord({ title, text }),
   ]);
@@ -64,6 +108,6 @@ export async function notify({ kind, title, text }) {
     else log('error', 'notify failed', r);
   }
   if (results.every((r) => r.skipped)) {
-    log('warn', 'no notification channel configured — set TELEGRAM_BOT_TOKEN+TELEGRAM_CHAT_ID or DISCORD_WEBHOOK_URL');
+    log('warn', 'no notification channel configured — set RESEND_API_KEY+RESEND_TO, TELEGRAM_BOT_TOKEN+TELEGRAM_CHAT_ID, or DISCORD_WEBHOOK_URL');
   }
 }

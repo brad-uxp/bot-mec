@@ -1,6 +1,6 @@
 # bot-mec
 
-Monitor de disponibilidad para `https://bpmgob.mec.gub.uy/`. Hace polling cada minuto y envía una notificación (Telegram o Discord) cuando el sitio vuelve a estar arriba, y cuando se cae después de haber estado arriba.
+Monitor de disponibilidad para `https://bpmgob.mec.gub.uy/`. Hace polling cada minuto y envía una notificación (email vía Resend, Telegram, o Discord) cuando el sitio vuelve a estar arriba, y cuando se cae después de haber estado arriba.
 
 Stack: Node.js 22 (ESM), sin dependencias, listo para Railway.
 
@@ -8,6 +8,7 @@ Stack: Node.js 22 (ESM), sin dependencias, listo para Railway.
 
 Ver `.env.example`. Las mínimas para que avise por algún canal son:
 
+- `RESEND_API_KEY` + `RESEND_TO` (email), **o**
 - `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`, **o**
 - `DISCORD_WEBHOOK_URL`
 
@@ -28,10 +29,19 @@ Healthcheck local: http://localhost:3000/health
 1. Crea un proyecto nuevo en Railway → "Deploy from GitHub repo" (sube este repo primero).
 2. Railway detecta `railway.json` y `package.json` automáticamente. Builder: Nixpacks. Start: `pnpm start`. Healthcheck: `/health`.
 3. En **Variables** del servicio, agrega al menos uno de los canales:
-   - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, o
+   - `RESEND_API_KEY` + `RESEND_TO` (recomendado: email), o
+   - `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`, o
    - `DISCORD_WEBHOOK_URL`
 4. Opcional: ajusta `CHECK_INTERVAL_MS` (default 60000 = 1 min).
 5. Deploy. Mira los logs hasta ver `monitor starting` y los chequeos.
+
+## Resend (email)
+
+1. Crea una API key en https://resend.com/api-keys (con permiso de envío).
+2. Pega `RESEND_API_KEY` y `RESEND_TO` (tu email) en las Variables de Railway.
+3. **Important**: si dejas el `RESEND_FROM` por defecto (`onboarding@resend.dev`), Resend solo permite enviar al email que es dueño de la cuenta. Para mandar a otros destinos, verifica un dominio propio en Resend y usa `RESEND_FROM=alerts@tudominio.com`.
+
+`RESEND_TO` admite varios destinatarios separados por coma: `a@x.com,b@x.com`.
 
 ## Cómo obtener un Telegram chat_id
 

@@ -27,4 +27,9 @@ export const config = {
     chatId: env.TELEGRAM_CHAT_ID || '',
   },
   discordWebhookUrl: env.DISCORD_WEBHOOK_URL || '',
+  resend: {
+    apiKey: env.RESEND_API_KEY || '',
+    from: env.RESEND_FROM || 'onboarding@resend.dev',
+    to: env.RESEND_TO || '',
+  },
 };
