@@ -1,0 +1,15 @@
+{
+  "name": "bot-mec",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Monitor de disponibilidad para https://bpmgob.mec.gub.uy/",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.0.0",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  }
+}
